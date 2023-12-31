@@ -16,10 +16,10 @@ FROM php:apache
 # Patch the container
 # Remove the apt-get lists after installation
 RUN apt-get update && \
+    apt-get -y upgrade && \
     apt-get install -y git && \
     git clone https://github.com/webpwnized/dragonfly.git /var/www/dragonfly && \
     apt-get remove -y git && \
-    apt-get -y upgrade && \
     apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
