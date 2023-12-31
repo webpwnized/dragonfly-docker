@@ -1,0 +1,30 @@
+name: scan-dockerfiles-with-trivy
+on:
+  push:
+    branches:
+      - development
+      - main
+  pull_request:
+jobs:
+  build:
+    name: Run Trivy on Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner in IaC mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          hide-progress: false
+          format: 'sarif'
+          output: 'dockerfile-trivy-scan-results.sarif'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'dockerfile-trivy-scan-results.sarif'
