@@ -1,6 +1,5 @@
 #!/bin/bash
-# This is a Bash script for updating the Mutillidae web application.
-# It must be run from the 'mutillidae-docker' directory.
+# This is a Bash script for updating the web application in a running www container.
 
 # Check if the 'www' container is running
 if [ ! "$(docker ps -q -f name=www)" ]; then
@@ -13,8 +12,8 @@ fi;
 echo "";
 
 # Inform the user about the update process.
-echo "Updating the Mutillidae application installed in the running 'www' container.";
+echo "Updating the application installed in the running 'www' container.";
 
 # Use 'docker exec' to execute commands inside the 'www' container.
 # First, ensure Git is installed by running 'apt install git -y' within the container.
-docker exec -it www sh -c "apt update; apt install git -y; cd /var/www/mutillidae; git pull"
+docker exec -it www sh -c "apt update; apt install git -y; cd /var/www/dragonfly; git pull"
