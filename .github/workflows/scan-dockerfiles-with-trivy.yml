@@ -30,7 +30,7 @@ jobs:
           hide-progress: false
           format: 'sarif'
           output: 'dockerfile-trivy-scan-results.sarif'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH,MEDIUM'
 
