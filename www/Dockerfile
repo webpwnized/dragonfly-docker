@@ -1,4 +1,4 @@
-#webpwnized/mutillidae:www
+#webpwnized/dragonfly:www
 
 # Start with recent version of PHP with Apache 
 # https://hub.docker.com/_/php?tab=tags&page=1&ordering=last_updated&name=apache
