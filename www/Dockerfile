@@ -17,7 +17,7 @@ FROM php:apache
 # Remove the apt-get lists after installation
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt-get install -y git && \
+    apt-get install --no-install-recommends -y git && \
     git clone https://github.com/webpwnized/dragonfly.git /var/www/dragonfly && \
     apt-get remove -y git && \
     apt-get -y autoremove && \
@@ -34,6 +34,12 @@ ENV APACHE_DOCUMENT_ROOT /var/www/dragonfly/
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# Health check to verify web server is running
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD curl -f http://localhost/ || exit 1
+
 # Open ports 80 in the container firewall
 # This exposes HTTP
 EXPOSE 80
+
+USER www-data
