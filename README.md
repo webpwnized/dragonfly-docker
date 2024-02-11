@@ -25,9 +25,16 @@ The application is run from containers in this project.
 
 The Dockerfile files in each directory contain the instructions to build each container. The docker-compose.yml file contains the instructions to set up networking for the container, and kick off the builds specified in the Dockerfile files.
 
-To build the containers, if neccesary, and bring the containers up, run the following command.
+## Build
 
-	docker-compose up -d
+To build the container image webpwnized/dragonfly:www, from project root, build with:
+
+    `docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .`
+
+## Run
+
+Run From project root, run with:
+    `docker-compose --file .build/docker-compose.yml up --detach`
 	
 Once the containers are running, the following services are available on localhost.
 
