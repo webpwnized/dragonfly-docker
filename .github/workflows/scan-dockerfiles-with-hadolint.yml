@@ -13,7 +13,8 @@ on:
 
   # Scan mainline branches (main and development) and report all findings.
   push:
-    branches: ["main", "development"]
+    branches:
+      - development
 
 # Define the jobs that should be executed in this workflow.
 jobs:
@@ -39,8 +40,8 @@ jobs:
 
       - name: Run Hadolint Scan with SARIF result
         uses: hadolint/hadolint-action@v3.1.0
-        with:   
-          dockerfile: Dockerfile
+        with:
+          dockerfile: .build/www/Dockerfile
           # Specify the name of the Dockerfile to be scanned.
           
           recursive: true
@@ -58,6 +59,12 @@ jobs:
           failure-threshold: 'error'
           # Define the threshold for failure based on severity (e.g., 'error').
       
+          verbose: true
+          
+      # View results
+      - name: View Results
+        run: cat hadolint-results.sarif
+
       - name: Upload Results to GitHub Advanced Security Dashboard
         uses: github/codeql-action/upload-sarif@main
         with:
