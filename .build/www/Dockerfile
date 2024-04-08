@@ -29,7 +29,9 @@ RUN apt-get update && \
     apt-get remove -y git && \
     apt-get -y autoremove && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* /usr/share/doc/* /usr/share/man/* && \
+    apt-get purge -y --auto-remove && \
+    rm -rf /var/cache/apt/archives/*
 
 # ######################## #
 # Configure the web server #

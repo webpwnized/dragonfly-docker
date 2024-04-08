@@ -8,22 +8,33 @@
 # From project root, run with:
 #   docker-compose --file .build/docker-compose.yml up --detach
 
-version: '3.8'
-services:
+# Documentation: https://github.com/compose-spec/compose-spec/blob/master/spec.md
+# Purpose: Build local containers for the Dragonfly environment
 
-# Port 8888 is for DAST scan
+# Define the version of Docker Compose syntax being used
+version: '3.8'
+
+# Define the services (containers) for the Dragonfly environment
+services:
+  # Service for the Dragonfly website
   www:
-    container_name: www
-    image: webpwnized/dragonfly:www
+    container_name: www  # Define the name of the container
+    image: webpwnized/dragonfly:www  # Specify the Docker image to use
+
+    # Build configuration for the container
     build:
-        context: www  # The context starts from the directory that the docker-compose.yml file is in unless adjusted
-        dockerfile: Dockerfile
+        context: www  # Specify the build context directory containing Dockerfile
+        dockerfile: Dockerfile  # Specify the Dockerfile to use for building the image
+
+    # Port mapping for accessing the website
     ports:
-      - 127.0.0.1:80:80
-      - 127.0.0.1:8888:80
+      - 127.0.0.1:80:80  # Map port 80 on the host to port 80 on the container
+      - 127.0.0.1:8888:80 # Map port 80 on the host to port 8888 on the container for DAST scan
+
+    # Network configuration to attach the service to 'httpnet' network
     networks:
-      - httpnet
-  
-# Create network segments for the containers to use
+      - httpnet  # Attach the service to the 'httpnet' network segment
+
+# Define network segments for the containers to use
 networks:
-    httpnet:
+    httpnet:  # Define the 'httpnet' network segment

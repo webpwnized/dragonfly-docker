@@ -1,9 +1,19 @@
 #!/bin/bash
 
-docker stop $(docker ps -a -q);
-docker rm $(docker ps -a -q);
-docker rmi $(docker images -a -q);
-docker container prune -f;
-docker image prune --all -f;
-docker volume prune -f;
-docker system prune --all --volumes -f;
+# Stop all running containers
+docker stop $(docker ps -q)
+
+# Remove all stopped containers
+docker rm $(docker ps -a -q)
+
+# Remove all dangling and unused images
+docker image prune -af
+
+# Remove all unused volumes
+docker volume prune -f
+
+# Remove all unused networks
+docker network prune -f
+
+# Remove all unused resources including containers, networks, images, and volumes
+docker system prune -af

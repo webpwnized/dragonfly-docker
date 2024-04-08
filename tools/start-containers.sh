@@ -1,26 +1,13 @@
 #!/bin/bash
-# Script must be run from the mutillidae-docker directory 
+# Script must be run from the project root directory
 
-echo "";
-echo "Starting containers";
-docker-compose -f docker-compose.yml up -d;
+# Define file paths
+DOCKERFILE_PATH=".build/www/Dockerfile"
+DOCKER_COMPOSE_PATH=".build/docker-compose.yml"
 
-echo "";
-echo "Waiting for database to start";
-sleep 10;
+echo "Building containers"
+docker build --file "$DOCKERFILE_PATH" --tag webpwnized/dragonfly:www .
 
-echo "";
-echo "Requesting Mutillidae database be built";
-curl http://mutillidae.localhost/set-up-database.php;
-
-echo "";
-echo "Uploading Mutillidae LDIF file to LDAP directory server";
-CURRENT_DIRECTORY=$(pwd);
-ldapadd -c -x -D "cn=admin,dc=mutillidae,dc=localhost" -w mutillidae -H ldap:// -f $CURRENT_DIRECTORY/ldap/ldif/mutillidae.ldif;
-
-# Wait for the user to press Enter key
-read -p "Press Enter to continue or <CTRL>-C to stop" </dev/tty
-
-echo "";
-echo "Clearing the screen";
-clear;
+echo "Starting containers"
+docker-compose --file "$DOCKER_COMPOSE_PATH" up --detach
+echo "Containers started successfully"

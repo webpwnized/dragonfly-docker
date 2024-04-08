@@ -1,19 +1,27 @@
 #!/bin/bash
-# This is a Bash script for updating the web application in a running www container.
 
-# Check if the 'www' container is running
-if [ ! "$(docker ps -q -f name=www)" ]; then
-    echo "";
-    echo "The 'www' container is not running so the application cannot be updated on the container.";
-    exit 1;
-fi;
+# Define container name
+CONTAINER_NAME="www"
 
-# Print a newline for better readability.
-echo "";
+# Check if the container exists
+if ! docker inspect "$CONTAINER_NAME" &>/dev/null; then
+    echo "Error: The '$CONTAINER_NAME' container does not exist."
+    exit 1
+fi
 
-# Inform the user about the update process.
-echo "Updating the application installed in the running 'www' container.";
+# Check if the container is running
+if ! docker ps --quiet --filter "name=$CONTAINER_NAME" >/dev/null; then
+    echo "Error: The '$CONTAINER_NAME' container is not running. Application cannot be updated."
+    exit 1
+fi
 
-# Use 'docker exec' to execute commands inside the 'www' container.
-# First, ensure Git is installed by running 'apt install git -y' within the container.
-docker exec -it  -u root www /bin/bash -c "apt update; apt install git -y; cd /var/www/dragonfly; git pull; echo \"Application Version: \$(cat version)\";"
+# Inform the user about the update process
+echo "Updating the application installed in the running '$CONTAINER_NAME' container..."
+
+# Update the application inside the container
+if ! docker exec "$CONTAINER_NAME" /bin/bash -c "apt update && apt install -y git && cd /var/www/dragonfly && git pull && echo \"Application Version: \$(cat version)\""; then
+    echo "Error: Failed to update the application in the container."
+    exit 1
+fi
+
+echo "Application update completed successfully."
