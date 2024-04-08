@@ -15,7 +15,7 @@ Code to containerize the Dragonfly PHP application
 
 ## TLDR
 
-	docker-compose up -d
+	docker-compose --file .build/docker-compose.yml up --detach
 
 ## Instructions
 
