@@ -11,7 +11,7 @@ Code to containerize the Dragonfly PHP application
 
 ## Project Announcements
 
-* **Twitter**: [https://twitter.com/webpwnized](https://twitter.com/webpwnized)
+* **X**: [https://twitter.com/webpwnized](https://twitter.com/webpwnized)
 
 ## TLDR
 
