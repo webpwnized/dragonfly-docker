@@ -6,6 +6,8 @@
 /_____/_/   \__,_/\__, /\____/_/ /_/_/ /_/\__, /  /_____/\____/\___/_/|_|\___/_/     
                  /____/                  /____/                                      
 
+```
+
 ## Project Announcements
 
 Stay updated with project announcements by following us on [Twitter](https://twitter.com/webpwnized).
