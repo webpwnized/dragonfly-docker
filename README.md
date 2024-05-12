@@ -5,38 +5,60 @@
  / /_/ / /  / /_/ / /_/ / /_/ / / / / __/ / /_/ /  / /_/ / /_/ / /__/ ,< /  __/ /    
 /_____/_/   \__,_/\__, /\____/_/ /_/_/ /_/\__, /  /_____/\____/\___/_/|_|\___/_/     
                  /____/                  /____/                                      
-```
-
-Code to containerize the Dragonfly PHP application
 
 ## Project Announcements
 
-* **X**: [https://twitter.com/webpwnized](https://twitter.com/webpwnized)
+Stay updated with project announcements by following us on [Twitter](https://twitter.com/webpwnized).
 
-## TLDR
+## TL;DR
 
-	docker-compose --file .build/docker-compose.yml up --detach
+To quickly run the Dragonfly PHP application using Docker, execute the following command:
 
-## Instructions
+```bash
+docker-compose --file .build/docker-compose.yml up --detach
+```
 
-The application is run from containers in this project. 
+## Overview
 
-- **www** - Apache, PHP, and application source code. The web site is exposed on ports 80,and 8088.
+This project provides containerized environments for running the Dragonfly PHP application. The directory structure is as follows:
 
-The Dockerfile files in each directory contain the instructions to build each container. The docker-compose.yml file contains the instructions to set up networking for the container, and kick off the builds specified in the Dockerfile files.
+- **LICENSE**: License file for the project.
+- **README.md**: Main documentation file in Markdown format.
+- **version**: File containing version information.
 
-## Build
+The `.build` directory contains Docker-related files:
 
-To build the container image webpwnized/dragonfly:www, from project root, build with:
+- **docker-compose.yml**: Docker Compose file to orchestrate container creation and networking.
+- **www**: Directory containing Dockerfile for building the `webpwnized/dragonfly:www` image.
 
+The `.tools` directory contains utility scripts for managing the project:
+
+- **list-container-installed-packages.sh**: Script to list installed packages in containers.
+- **remove-all-images.sh**: Script to remove all Docker images.
+- **update-dragonfly-application.sh**: Script to update the Dragonfly application.
+- **git.sh**: Git utility script for managing the project repository.
+- **push-to-dockerhub.sh**: Script to push Docker images to Docker Hub.
+- **push-development-branch.sh**: Script to push changes to the development branch.
+- **start-containers.sh**: Script to start Docker containers.
+- **stop-containers.sh**: Script to stop Docker containers.
+
+## Usage
+
+1. **Building Containers**: To build the container image `webpwnized/dragonfly:www`, execute the following command from the project root:
+
+    ```bash
     docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
+    ```
 
-## Run
+2. **Running Containers**: Start the containers using Docker Compose. From the project root, execute:
 
-Run From project root, run with:
-
+    ```bash
     docker-compose --file .build/docker-compose.yml up --detach
-	
-Once the containers are running, the following services are available on localhost.
+    ```
 
-- Port 80, 8088: Dragonfly HTTP web interface
+Once the containers are running, you can access the Dragonfly web interface at the following URLs:
+
+- [http://localhost](http://localhost)
+- [http://localhost:8088](http://localhost:8088)
+
+Enjoy using Dragonfly!
