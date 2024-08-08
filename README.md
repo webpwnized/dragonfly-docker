@@ -17,7 +17,7 @@ Stay updated with project announcements by following us on [Twitter](https://twi
 To quickly run the Dragonfly PHP application using Docker, execute the following command:
 
 ```bash
-docker-compose --file .build/docker-compose.yml up --detach
+docker compose --file .build/docker compose.yml up --detach
 ```
 
 ## Overview
@@ -30,7 +30,7 @@ This project provides containerized environments for running the Dragonfly PHP a
 
 The `.build` directory contains Docker-related files:
 
-- **docker-compose.yml**: Docker Compose file to orchestrate container creation and networking.
+- **docker compose.yml**: Docker Compose file to orchestrate container creation and networking.
 - **www**: Directory containing Dockerfile for building the `webpwnized/dragonfly:www` image.
 
 The `.tools` directory contains utility scripts for managing the project:
@@ -55,7 +55,7 @@ The `.tools` directory contains utility scripts for managing the project:
 2. **Running Containers**: Start the containers using Docker Compose. From the project root, execute:
 
     ```bash
-    docker-compose --file .build/docker-compose.yml up --detach
+    docker compose --file .build/docker compose.yml up --detach
     ```
 
 Once the containers are running, you can access the Dragonfly web interface at the following URLs:
