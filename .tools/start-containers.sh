@@ -3,7 +3,7 @@
 
 # Define file paths
 DOCKERFILE_PATH=".build/www/Dockerfile"
-DOCKER_COMPOSE_PATH=".build/docker compose.yml"
+DOCKER_COMPOSE_PATH=".build/docker-compose.yml"
 
 echo "Building containers"
 docker build --file "$DOCKERFILE_PATH" --tag webpwnized/dragonfly:www .

@@ -3,7 +3,7 @@
 # This script stops and removes the containers defined in the Docker Compose file.
 
 # Define the path to the Docker Compose file
-DOCKER_COMPOSE_FILE=".build/docker compose.yml"
+DOCKER_COMPOSE_FILE=".build/docker-compose.yml"
 
 # Function to display error message and exit
 display_error() {
