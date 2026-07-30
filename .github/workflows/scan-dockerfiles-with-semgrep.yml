@@ -48,7 +48,7 @@ jobs:
       - name: Run Semgrep Blocking SAST Scan
         run: |
           semgrep scan \
-            --config dockerfile.security.last-user-is-root.last-user-is-root \
+            --config dockerfile.security.last-user-is-root \
             --sarif \
             --output semgrep-blocking-results.sarif \
             --error \
