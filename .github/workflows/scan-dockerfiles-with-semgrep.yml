@@ -38,7 +38,7 @@ jobs:
     steps:
       # Check out the repository so Semgrep can scan its contents.
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@main
 
       # Run only the explicitly approved blocking rule.
       # The --error option causes Semgrep to return a nonzero exit code
@@ -73,7 +73,7 @@ jobs:
       # Semgrep scan returns a nonzero exit code.
       - name: Upload Blocking SARIF Results
         if: always()
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@main
         with:
           sarif_file: semgrep-blocking-results.sarif
           category: "Semgrep Blocking SAST Scan"
@@ -82,7 +82,7 @@ jobs:
       # gate the workflow.
       - name: Upload Audit SARIF Results
         if: always()
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@main
         with:
           sarif_file: semgrep-audit-results.sarif
           category: "Semgrep Audit SAST Scan"

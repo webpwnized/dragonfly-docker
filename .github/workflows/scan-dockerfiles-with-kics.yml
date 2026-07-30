@@ -32,13 +32,13 @@ jobs:
     # Define the steps that should be executed in this job.
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
         # Step: Checkout code
         # Action to check out the code from the repository.
         # This step fetches the codebase from the GitHub repository.
 
       - name: Run KICS Scan with SARIF result
-        uses: Checkmarx/kics-github-action@v1.7.0
+        uses: Checkmarx/kics-github-action@main
         with:
           platform_type: Dockerfile
           path: .build/www
