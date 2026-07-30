@@ -51,8 +51,8 @@ jobs:
             --config r/yaml.docker.security.last-user-is-root \
             --sarif \
             --output semgrep-blocking-results.sarif \
-            --error
-            dragonfly-docker/.build
+            --error \
+            .build
 
       # Run the broader Dockerfiles Community ruleset in audit mode.
       # always() ensures the audit scan still runs when the blocking scan
@@ -64,8 +64,8 @@ jobs:
           semgrep scan \
             --config p/docker \
             --sarif \
-            --output semgrep-audit-results.sarif
-            dragonfly-docker/.build
+            --output semgrep-audit-results.sarif \
+            .build
         continue-on-error: true
 
       # Publish blocking findings to GitHub Code Scanning.
