@@ -1,0 +1,88 @@
+# Name of this GitHub Actions workflow.
+name: Scan Dockerfiles with Semgrep SAST
+
+on:
+  # Run Semgrep when a pull request is opened or updated.
+  pull_request: {}
+
+  # Allow the workflow to be started manually from the GitHub Actions interface.
+  workflow_dispatch: {}
+
+  # Run Semgrep when code is pushed directly to the development branch.
+  push:
+    branches:
+      - 'development'
+
+jobs:
+  semgrep:
+    # Display name for this GitHub Actions job.
+    name: Scan Dockerfiles with Semgrep SAST
+
+    # GitHub provisions an Ubuntu runner to host the Semgrep container.
+    runs-on: ubuntu-latest
+
+    # Grant only the permissions required to read the repository and
+    # publish SARIF results to GitHub Code Scanning.
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    # Run the job inside the Semgrep container.
+    container:
+      image: docker.io/semgrep/semgrep:latest
+
+    # Do not run this job for pull requests created by Dependabot.
+    if: github.actor != 'dependabot[bot]'
+
+    steps:
+      # Check out the repository so Semgrep can scan its contents.
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Run only the explicitly approved blocking rule.
+      # The --error option causes Semgrep to return a nonzero exit code
+      # when the blocking rule produces a finding, causing the job to fail.
+      # SARIF output is generated so the finding can also be published
+      # to GitHub Code Scanning.
+      - name: Run Semgrep Blocking SAST Scan
+        run: |
+          semgrep scan \
+            --config r/yaml.docker.security.last-user-is-root \
+            --sarif \
+            --output semgrep-blocking-results.sarif \
+            --error
+            dragonfly-docker/.build
+
+      # Run the broader Dockerfiles Community ruleset in audit mode.
+      # always() ensures the audit scan still runs when the blocking scan
+      # detects a finding and returns a nonzero exit code.
+      # Audit findings are reported but do not cause the job to fail.
+      - name: Run Semgrep Audit SAST Scan
+        if: always()
+        run: |
+          semgrep scan \
+            --config p/docker \
+            --sarif \
+            --output semgrep-audit-results.sarif
+            dragonfly-docker/.build
+        continue-on-error: true
+
+      # Publish blocking findings to GitHub Code Scanning.
+      # always() ensures the upload is attempted even when the blocking
+      # Semgrep scan returns a nonzero exit code.
+      - name: Upload Blocking SARIF Results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: semgrep-blocking-results.sarif
+          category: "Semgrep Blocking SAST Scan"
+
+      # Publish audit findings separately from the findings used to
+      # gate the workflow.
+      - name: Upload Audit SARIF Results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: semgrep-audit-results.sarif
+          category: "Semgrep Audit SAST Scan"
