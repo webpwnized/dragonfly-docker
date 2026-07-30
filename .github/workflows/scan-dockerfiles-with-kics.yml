@@ -38,7 +38,7 @@ jobs:
         # This step fetches the codebase from the GitHub repository.
 
       - name: Run KICS Scan with SARIF result
-        uses: Checkmarx/kics-github-action@main
+        uses: Checkmarx/kics-github-action@master
         with:
           platform_type: Dockerfile
           path: .build/www
