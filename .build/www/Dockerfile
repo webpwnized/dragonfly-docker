@@ -1,55 +1,43 @@
+# ==============================================================================
+# DRAGONFLY WWW DOCKERFILE (ULTRA-MINIMAL MULTI-STAGE)
+# ==============================================================================
 # Container image: webpwnized/dragonfly:www
-# From project root, build with: 
-#   docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
-#
-# From project root, run with:
-#   docker compose --file .build/docker-compose.yml up --detach
+# Build: docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
+# Run:   docker compose --file .build/docker-compose.yml up --detach
+# ==============================================================================
 
-# Start with recent version of PHP with Apache 
-# https://hub.docker.com/_/php?tab=tags&page=1&ordering=last_updated&name=apache
-FROM php:apache
+# ==============================================================================
+# STAGE 1: build-stage-1 (Application Fetcher)
+# Purpose: Downloads source code via Git. Discarded entirely after build.
+# ==============================================================================
+FROM php:alpine AS build-stage-1
 
-# ######################### #
-# Install software packages #
-# ######################### #
+RUN apk add --no-cache git && \
+    git clone https://github.com/webpwnized/dragonfly.git /tmp/dragonfly
 
-# Update software packages
-# Install PHP requirements: if any
-# Install git
-# Copy the application project to Apache web files directory
-# uninstall git
-# Patch the container
-# Remove the apt-get lists after installation
-RUN apt-get update && \
-    apt-get -y upgrade && \
-    apt-get install --no-install-recommends -y git && \
-    git clone https://github.com/webpwnized/dragonfly.git /tmp/dragonfly && \
-    cp -r /tmp/dragonfly/src /var/www/dragonfly && \
-    rm -rf /tmp/dragonfly && \
-    apt-get remove -y git && \
-    apt-get -y autoremove && \
-    apt-get clean && \
-    rm -rf /usr/share/doc/* /usr/share/man/* && \
-    apt-get purge -y --auto-remove && \
-    rm -rf /var/cache/apt/archives/*
 
-# ######################## #
-# Configure the web server #
-# ######################## #
+# ==============================================================================
+# STAGE 2: Minimal Hardened Runtime
+# Purpose: Lightweight PHP runtime
+# ==============================================================================
+FROM php:8.2-alpine AS build-stage-final
 
-# Change the document root
-ENV APACHE_DOCUMENT_ROOT="/var/www/dragonfly/"
+# Install curl (required for Docker HEALTHCHECK)
+RUN apk add --no-cache curl
 
-RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf && \
-        sed -ri -e "s!/var/www/!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# Copy web files from Stage 1 into document root
+COPY --from=build-stage-1 --chown=www-data:www-data /tmp/dragonfly/src /var/www/dragonfly
 
-# Health check to verify web server is running
+WORKDIR /var/www/dragonfly
+
+# Health check to verify application responds
 HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost/ || exit 1
+    CMD curl -f http://localhost:80/ || exit 1
 
-# Open ports 80 in the container firewall
-# This exposes HTTP
 EXPOSE 80
 
-# USER command usually not used in GitHub Actions
+# Run container as non-root www-data user
 USER www-data
+
+# Start PHP built-in web server on port 80 serving /var/www/dragonfly
+CMD ["php", "-S", "0.0.0.0:80", "-t", "/var/www/dragonfly"]

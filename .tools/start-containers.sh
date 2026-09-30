@@ -154,6 +154,6 @@ run "${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" up -d
 
 # ---------- Health Checks (optional but helpful) ----------
 info "Listing running services for quick verification:"
-run "${COMPOSE_CMD[@" ]}" -f "$COMPOSE_FILE" ps
+run "${COMPOSE_CMD[@]}" -f "$COMPOSE_FILE" ps
 
 info "Success. Containers are up."

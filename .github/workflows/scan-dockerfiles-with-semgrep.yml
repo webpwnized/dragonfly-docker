@@ -40,20 +40,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@main
 
-      # Run only the explicitly approved blocking rule.
-      # The --error option causes Semgrep to return a nonzero exit code
-      # when the blocking rule produces a finding, causing the job to fail.
-      # SARIF output is generated so the finding can also be published
-      # to GitHub Code Scanning.
-      - name: Run Semgrep Blocking SAST Scan
-        run: |
-          semgrep scan \
-            --config r/dockerfile.security.last-user-is-root \
-            --sarif \
-            --output semgrep-blocking-results.sarif \
-            --error \
-            .build
-
       # Run the broader Dockerfiles Community ruleset in audit mode.
       # always() ensures the audit scan still runs when the blocking scan
       # detects a finding and returns a nonzero exit code.
@@ -68,6 +54,20 @@ jobs:
             .build
         continue-on-error: true
 
+      # Run only the explicitly approved blocking rule.
+      # The --error option causes Semgrep to return a nonzero exit code
+      # when the blocking rule produces a finding, causing the job to fail.
+      # SARIF output is generated so the finding can also be published
+      # to GitHub Code Scanning.
+      - name: Run Semgrep Blocking SAST Scan
+        run: |
+          semgrep scan \
+            --config r/dockerfile.security.last-user-is-root \
+            --sarif \
+            --output semgrep-blocking-results.sarif \
+            --error \
+            .build
+            
       # Publish blocking findings to GitHub Code Scanning.
       # always() ensures the upload is attempted even when the blocking
       # Semgrep scan returns a nonzero exit code.
