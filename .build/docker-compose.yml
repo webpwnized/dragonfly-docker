@@ -11,9 +11,6 @@
 # Documentation: https://github.com/compose-spec/compose-spec/blob/master/spec.md
 # Purpose: Build local containers for the Dragonfly environment
 
-# Define the version of Docker Compose syntax being used
-version: '3.8'
-
 # Define the services (containers) for the Dragonfly environment
 services:
   # Service for the Dragonfly website

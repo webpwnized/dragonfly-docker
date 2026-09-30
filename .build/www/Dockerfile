@@ -1,5 +1,5 @@
 # ==============================================================================
-# DRAGONFLY WWW DOCKERFILE (ULTRA-MINIMAL MULTI-STAGE)
+# DRAGONFLY WWW DOCKERFILE (MINIMAL MULTI-STAGE)
 # ==============================================================================
 # Container image: webpwnized/dragonfly:www
 # Build: docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
@@ -22,17 +22,10 @@ RUN apk add --no-cache git && \
 # ==============================================================================
 FROM php:8.2-alpine AS build-stage-final
 
-# Install curl (required for Docker HEALTHCHECK)
-RUN apk add --no-cache curl
-
 # Copy web files from Stage 1 into document root
 COPY --from=build-stage-1 --chown=www-data:www-data /tmp/dragonfly/src /var/www/dragonfly
 
 WORKDIR /var/www/dragonfly
-
-# Health check to verify application responds
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost:80/ || exit 1
 
 EXPOSE 80
 
