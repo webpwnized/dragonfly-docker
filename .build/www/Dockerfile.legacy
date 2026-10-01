@@ -1,0 +1,8 @@
+# Unoptimized legacy build for comparison
+FROM php:apache
+
+RUN apt-get update && \
+    apt-get install -y git && \
+    git clone https://github.com/webpwnized/dragonfly.git /tmp/dragonfly && \
+    cp -r /tmp/dragonfly/src/* /var/www/html/ && \
+    rm -rf /tmp/dragonfly
