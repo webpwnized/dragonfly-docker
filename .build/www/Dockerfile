@@ -4,6 +4,7 @@
 # Container image: webpwnized/dragonfly:www
 # Build: docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
 # Run:   docker compose --file .build/docker-compose.yml up --detach
+# Test:  docker compose -f .build/docker-compose.yml run -d --rm --name dragonfly --service-ports --volume "$HOME/projects/dragonfly/dragonfly/src:/var/www/dragonfly:ro" www
 # ==============================================================================
 
 # ==============================================================================

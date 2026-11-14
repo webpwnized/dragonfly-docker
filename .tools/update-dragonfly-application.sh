@@ -1,40 +1,97 @@
 #!/bin/bash
+set -euo pipefail
 
-# Define container name and temporary directory
 CONTAINER_NAME="www"
-TMP_DIR="/tmp/dragonfly"
 APP_PATH="/var/www/dragonfly"
+REPO_URL="https://github.com/webpwnized/dragonfly.git"
 
-# Function to handle errors
+usage() {
+    cat <<'EOF'
+Usage: update-dragonfly.sh [-b BRANCH | --branch BRANCH]
+       update-dragonfly.sh [-h | --help]
+
+Update Dragonfly in the running Docker container named www.
+
+  -b, --branch BRANCH  Update from the specified Git branch.
+                       With no branch specified, use the repository default.
+  -h, --help           Show this help and exit.
+EOF
+}
+
 handle_error() {
-    echo "Error: $1"
+    printf 'Error: %s\n' "$1" >&2
     exit 1
 }
 
-# Check if the container exists
-echo "Checking if the '$CONTAINER_NAME' container exists..."
-docker inspect "$CONTAINER_NAME" &>/dev/null || handle_error "The '$CONTAINER_NAME' container does not exist."
-echo "Container '$CONTAINER_NAME' found."
+branch=""
+case "${1:-}" in
+    -h|--help)
+        [[ $# -eq 1 ]] || handle_error "Use --help by itself."
+        usage
+        exit 0
+        ;;
+    -b|--branch)
+        [[ $# -eq 2 && -n "$2" && "$2" != -* ]] ||
+            handle_error "Specify one branch name. See --help."
+        branch="$2"
+        ;;
+    "")
+        [[ $# -eq 0 ]] || handle_error "See --help."
+        ;;
+    *)
+        handle_error "Unknown argument: $1. See --help."
+        ;;
+esac
 
-# Check if the container is running
-echo "Checking if the '$CONTAINER_NAME' container is running..."
-docker ps --quiet --filter "name=$CONTAINER_NAME" >/dev/null || handle_error "The '$CONTAINER_NAME' container is not running. Application cannot be updated."
-echo "Container '$CONTAINER_NAME' is running."
+running=$(docker container inspect --format '{{.State.Running}}' "$CONTAINER_NAME") ||
+    handle_error "Could not inspect container '$CONTAINER_NAME'."
+[[ "$running" == "true" ]] ||
+    handle_error "Container '$CONTAINER_NAME' is stopped."
 
-# Inform the user about the update process
-echo "Updating the application installed in the running '$CONTAINER_NAME' container..."
+docker exec -i -u root "$CONTAINER_NAME" /bin/bash -s -- \
+    "$APP_PATH" "$REPO_URL" "$branch" <<'CONTAINER_SCRIPT'
+set -euo pipefail
 
-# Install needed software inside the container
-echo "Installing necessary software (git) inside the container..."
-docker exec -u root "$CONTAINER_NAME" /bin/bash -c "apt update && apt install -y git" || handle_error "Failed to install git in the container."
-echo "Git installed successfully."
+app_path="$1"
+repo_url="$2"
+branch="$3"
 
-# Clone the updated application from the repository
-echo "Cloning the updated application from the repository..."
-docker exec -u root "$CONTAINER_NAME" /bin/bash -c "git clone https://github.com/webpwnized/dragonfly.git $TMP_DIR" || handle_error "Failed to clone the updated application from the repository."
-echo "Application cloned successfully."
+if ! command -v git >/dev/null 2>&1; then
+    apt-get update
+    apt-get install -y git
+fi
 
-# Move the updated application to the correct location and clean up the temporary directory
-echo "Moving the updated application to the correct location and cleaning up..."
-docker exec -u root "$CONTAINER_NAME" /bin/bash -c "rm -rf $APP_PATH && mv $TMP_DIR/src $APP_PATH && rm -rf $TMP_DIR" || handle_error "Failed to move the updated application to the correct location."
-echo "Application update completed successfully."
+# Stage beside the live directory so the final moves stay on one filesystem.
+stage=$(mktemp -d -- "$(dirname -- "$app_path")/.dragonfly-update.XXXXXXXX")
+backup="$stage/previous"
+trap 'if [[ ! -e "$backup" ]]; then rm -rf -- "$stage"; fi' EXIT
+
+clone_options=(--single-branch)
+if [[ -n "$branch" ]]; then
+    git check-ref-format "refs/heads/$branch"
+    clone_options+=(--branch "$branch")
+fi
+
+git clone "${clone_options[@]}" -- "$repo_url" "$stage/repo"
+
+# Git also accepts a tag for --branch. Require a branch checkout.
+checked_out_branch=$(git -C "$stage/repo" symbolic-ref --quiet --short HEAD) ||
+    { printf 'Error: The checkout is not a branch.\n' >&2; exit 1; }
+
+[[ -f "$stage/repo/src/index.php" && -d "$app_path" && ! -L "$app_path" ]] ||
+    { printf 'Error: Check the staged source and live application path.\n' >&2; exit 1; }
+
+commit=$(git -C "$stage/repo" rev-parse --short HEAD)
+
+# Retain the previous version for rollback after the browser smoke test.
+mv -T -- "$app_path" "$backup"
+if ! mv -T -- "$stage/repo/src" "$app_path"; then
+    if ! mv -T -- "$backup" "$app_path"; then
+        printf 'Error: Restore the previous application from %s\n' "$backup" >&2
+    fi
+    exit 1
+fi
+
+printf 'Updated Dragonfly from %s (%s).\n' "$checked_out_branch" "$commit"
+printf 'Previous application retained at %s\n' "$backup"
+CONTAINER_SCRIPT
