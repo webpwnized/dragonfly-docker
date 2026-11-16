@@ -1,0 +1,68 @@
+# Lint the Dockerfile used to build the Dragonfly web container.
+name: Scan Dockerfile with Hadolint
+
+on:
+  # Run before merge. Hadolint checks the full Dockerfile, including
+  # unchanged lines in the proposed revision.
+  pull_request: {}
+
+  # Allow maintainers to run the same check from the Actions tab.
+  workflow_dispatch: {}
+
+  # Refresh results when changes reach development.
+  push:
+    branches:
+      - development
+
+jobs:
+  hadolint-job:
+    name: Hadolint Github Action
+    runs-on: ubuntu-latest
+
+    # Grant the job access to read repository and Actions metadata
+    # and publish results to GitHub Code Scanning.
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        # A full commit SHA fixes the action code used by the workflow.
+        # The version comment gives reviewers a readable release reference.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Later steps need the source files, so leave Git credentials
+          # out of the checkout's local configuration.
+          persist-credentials: false
+
+      - name: Run Hadolint Scan with SARIF result
+        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          # Keep the production Dockerfile target and recursive setting.
+          dockerfile: .build/www/Dockerfile
+          recursive: true
+
+          # SARIF carries rule IDs, locations, and messages to Code Scanning.
+          format: sarif
+          output-file: hadolint-results.sarif
+          verbose: true
+
+          # Lint findings are report-only. Review them in Code Scanning.
+          no-fail: true
+
+      - name: View Results
+        # Print a report if Hadolint produced one, including after a failed
+        # lint step. Skip this step when the run is canceled.
+        if: ${{ !cancelled() && hashFiles('hadolint-results.sarif') != '' }}
+        run: cat hadolint-results.sarif
+
+      - name: Upload Results to GitHub Code Scanning
+        # Attempt the upload whenever a report exists. Without a report,
+        # the preceding step's error remains the useful diagnostic.
+        if: ${{ !cancelled() && hashFiles('hadolint-results.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: hadolint-results.sarif
+          # Preserve the category so GitHub can track the same analysis.
+          category: Hadolint Dockerfile Scan

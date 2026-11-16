@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default path to the Docker Compose file relative to repo root
-DEFAULT_COMPOSE_FILE=".build/docker-compose.yml"
+DEFAULT_COMPOSE_FILE=".build/docker-compose.yaml"
 DOCKER_COMPOSE_FILE="$DEFAULT_COMPOSE_FILE"
 
 PURGE_PROJECT_IMAGES=false
@@ -17,19 +17,19 @@ Stops and completely removes Docker containers, networks, and volumes
 associated with this project.
 
 Arguments:
-  FILE_PATH                  Path to docker-compose.yml (optional)
+  FILE_PATH                  Path to docker-compose.yaml (optional)
 
 Options:
-  -f, --file FILE_PATH       Specify path to docker-compose.yml file
+  -f, --file FILE_PATH       Specify path to docker-compose.yaml file
   --rmi, --images            Also remove Docker images built/used by this project
   --no-volumes               Do NOT remove persistent volumes associated with this project
   --system                   [DANGER] Perform a system-wide prune of ALL unused Docker resources
   -h, --help                 Display this help message and exit
 
 Examples:
-  $(basename "$0") .build/docker-compose.yml
-  $(basename "$0") --rmi .build/docker-compose.yml
-  $(basename "$0") -f .build/docker-compose.yml --rmi
+  $(basename "$0") .build/docker-compose.yaml
+  $(basename "$0") --rmi .build/docker-compose.yaml
+  $(basename "$0") -f .build/docker-compose.yaml --rmi
   $(basename "$0") --system
 EOF
     exit 0

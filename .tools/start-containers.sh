@@ -27,7 +27,7 @@ VERBOSE=0
 BUILD_ARGS=()
 IMAGE_TAG="webpwnized/dragonfly:www"
 DOCKERFILE_REL=".build/www/Dockerfile"
-COMPOSE_REL=".build/docker-compose.yml"
+COMPOSE_REL=".build/docker-compose.yaml"
 
 # ---------- Helpers ----------
 run() {
@@ -46,7 +46,7 @@ Usage: start-containers.sh [options]
 
 Options:
   --project-root PATH     Explicit project root (auto-detected if omitted)
-  --compose PATH          Explicit docker-compose file (default: .build/docker-compose.yml under root)
+  --compose PATH          Explicit docker-compose file (default: .build/docker-compose.yaml under root)
   --no-build              Skip docker build (use existing image)
   --rebuild               Force rebuild (docker build --no-cache)
   --build-arg K=V         Add a build-arg (repeatable)
@@ -57,7 +57,7 @@ Options:
 Examples:
   ./start-containers.sh
   ./start-containers.sh --rebuild --build-arg HTTP_PROXY=http://proxy:8080
-  ./start-containers.sh --compose /abs/path/docker-compose.yml
+  ./start-containers.sh --compose /abs/path/docker-compose.yaml
 USAGE
 }
 
@@ -123,7 +123,7 @@ fi
 
 [[ -f "$COMPOSE_FILE" ]] || {
   warn "Missing compose file at: $COMPOSE_FILE"
-  warn "Tip: The repo expects '.build/docker-compose.yml' under the project root."
+  warn "Tip: The repo expects '.build/docker-compose.yaml' under the project root."
   die  "Provide a valid file with --compose PATH."
 }
 

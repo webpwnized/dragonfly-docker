@@ -3,25 +3,24 @@
 # ==============================================================================
 # Container image: webpwnized/dragonfly:www
 # Build: docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
-# Run:   docker compose --file .build/docker-compose.yml up --detach
-# Test:  docker compose -f .build/docker-compose.yml run -d --rm --name dragonfly --service-ports --volume "$HOME/projects/dragonfly/dragonfly/src:/var/www/dragonfly:ro" www
+# Run:   docker compose --file .build/docker-compose.yaml up --detach
+# Development:  docker compose -f .build/docker-compose.yaml run -d --rm --name dragonfly --service-ports --volume "$HOME/projects/dragonfly/dragonfly/src:/var/www/dragonfly:ro" www
 # ==============================================================================
 
 # ==============================================================================
 # STAGE 1: build-stage-1 (Application Fetcher)
 # Purpose: Downloads source code via Git. Discarded entirely after build.
 # ==============================================================================
-FROM php:alpine AS build-stage-1
+FROM alpine:latest AS build-stage-1
 
 RUN apk add --no-cache git && \
     git clone https://github.com/webpwnized/dragonfly.git /tmp/dragonfly
-
 
 # ==============================================================================
 # STAGE 2: Minimal Hardened Runtime
 # Purpose: Lightweight PHP runtime
 # ==============================================================================
-FROM php:8.2-alpine AS build-stage-final
+FROM php:8.5-cli-alpine AS build-stage-final
 
 # Copy web files from Stage 1 into document root
 COPY --from=build-stage-1 --chown=www-data:www-data /tmp/dragonfly/src /var/www/dragonfly

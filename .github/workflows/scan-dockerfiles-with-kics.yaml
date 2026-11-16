@@ -1,0 +1,95 @@
+# Scan Dragonfly's Dockerfiles and Compose configuration for misconfigurations.
+# Keep the existing workflow name so it remains easy to find in Actions.
+name: Scan Dockerfile with KICS
+
+on:
+  # Scan the full configured targets in the proposed revision.
+  pull_request: {}
+
+  # Allow maintainers to run the scans from the Actions tab.
+  workflow_dispatch: {}
+
+  # Refresh the findings after changes reach development.
+  push:
+    branches:
+      - development
+
+jobs:
+  kics-job:
+    # Preserve the existing job name for any required status checks.
+    name: KICS Github Action
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Read the workflow run metadata and check out the repository.
+      actions: read
+      contents: read
+      # Publish SARIF reports to GitHub Code Scanning.
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        id: checkout
+        # Pin the action to a specific commit. Dependabot can propose updates.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The remaining steps read the checkout without needing Git credentials.
+          persist-credentials: false
+
+      - name: Scan Dockerfiles with KICS
+        uses: Checkmarx/kics-github-action@v2.1.20
+        with:
+          # Preserve the original scan scope and use Dockerfile queries.
+          path: .build/www
+          type: Dockerfile
+
+          # KICS writes results.sarif in this directory.
+          output_path: kics-reports/dockerfile
+          output_formats: sarif
+          verbose: true
+
+          # Findings are report-only. Scanner execution errors fail the step.
+          ignore_on_exit: results
+
+      - name: Scan Docker Compose with KICS
+        # Run this scan if checkout succeeded, even if the Dockerfile scan failed.
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        uses: Checkmarx/kics-github-action@v2.1.20
+        with:
+          # Scan the tracked Compose file directly so findings can link to it.
+          path: .build/docker-compose.yaml
+          type: DockerCompose
+
+          # Use a separate directory because both scans write results.sarif.
+          output_path: kics-reports/compose
+          output_formats: sarif
+          verbose: true
+          ignore_on_exit: results
+
+      - name: View KICS Dockerfile report
+        # Show any report produced, even if the Compose scan failed.
+        if: ${{ !cancelled() && hashFiles('kics-reports/dockerfile/results.sarif') != '' }}
+        run: cat kics-reports/dockerfile/results.sarif
+
+      - name: View KICS Compose report
+        # Check for the Compose report independently of the Dockerfile report.
+        if: ${{ !cancelled() && hashFiles('kics-reports/compose/results.sarif') != '' }}
+        run: cat kics-reports/compose/results.sarif
+
+      - name: Upload Dockerfile results to GitHub Code Scanning
+        # Guard the upload so a missing report doesn't obscure a scan failure.
+        if: ${{ !cancelled() && hashFiles('kics-reports/dockerfile/results.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: kics-reports/dockerfile/results.sarif
+          # Preserve the existing category for tracking Dockerfile findings.
+          category: KICS Dockerfile Scan
+
+      - name: Upload Compose results to GitHub Code Scanning
+        # Upload the Compose report whenever KICS produced it.
+        if: ${{ !cancelled() && hashFiles('kics-reports/compose/results.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: kics-reports/compose/results.sarif
+          # A distinct category lets both reports coexist on the same commit.
+          category: KICS Docker Compose Scan

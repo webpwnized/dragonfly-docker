@@ -1,0 +1,26 @@
+# Dependabot configuration for the Dragonfly Docker repository.
+version: 2
+
+updates:
+  # Check action references in .github/workflows/.
+  - package-ecosystem: github-actions
+
+    # Use "/" for GitHub Actions. Dependabot locates the workflows
+    # under .github/workflows/ automatically.
+    directory: /
+
+    # Check for newer action releases once per week.
+    schedule:
+      interval: weekly
+
+    # Group available action updates into one pull request for review.
+    groups:
+      workflow-actions:
+        patterns:
+          - "*"
+
+  # Review base-image updates for the Dockerfile that builds www.
+  - package-ecosystem: docker
+    directory: /.build/www
+    schedule:
+      interval: weekly

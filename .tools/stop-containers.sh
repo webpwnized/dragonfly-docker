@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default path to the Docker Compose file relative to repo root
-DEFAULT_COMPOSE_FILE=".build/docker-compose.yml"
+DEFAULT_COMPOSE_FILE=".build/docker-compose.yaml"
 DOCKER_COMPOSE_FILE="$DEFAULT_COMPOSE_FILE"
 
 # Function to display help / usage
@@ -12,15 +12,15 @@ Usage: $(basename "$0") [OPTIONS] [FILE_PATH]
 Stops running Docker containers defined in the Docker Compose configuration file.
 
 Arguments:
-  FILE_PATH                  Path to docker-compose.yml (optional)
+  FILE_PATH                  Path to docker-compose.yaml (optional)
 
 Options:
-  -f, --file FILE_PATH       Specify path to docker-compose.yml file
+  -f, --file FILE_PATH       Specify path to docker-compose.yaml file
   -h, --help                 Display this help message and exit
 
 Examples:
-  $(basename "$0") -f .build/docker-compose.yml
-  $(basename "$0") .build/docker-compose.yml
+  $(basename "$0") -f .build/docker-compose.yaml
+  $(basename "$0") .build/docker-compose.yaml
 EOF
     exit 0
 }

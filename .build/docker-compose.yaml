@@ -6,7 +6,8 @@
 #   docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
 #
 # From project root, run with:
-#   docker compose --file .build/docker-compose.yml up --detach
+#   Testing:      docker compose --file .build/docker-compose.yaml up --detach
+#   Development:  docker compose -f .build/docker-compose.yaml run -d --rm --name dragonfly --service-ports --volume "$HOME/projects/dragonfly/dragonfly/src:/var/www/dragonfly:ro" www
 
 # Documentation: https://github.com/compose-spec/compose-spec/blob/master/spec.md
 # Purpose: Build local containers for the Dragonfly environment
