@@ -2,18 +2,23 @@
 version: 2
 
 updates:
-  # Check action references in .github/workflows/.
+  # GitHub Actions updates for main.
   - package-ecosystem: github-actions
-
-    # Use "/" for GitHub Actions. Dependabot locates the workflows
-    # under .github/workflows/ automatically.
     directory: /
-
-    # Check for newer action releases once per week.
+    target-branch: main
     schedule:
       interval: weekly
+    groups:
+      workflow-actions:
+        patterns:
+          - "*"
 
-    # Group available action updates into one pull request for review.
+  # GitHub Actions updates for development.
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: development
+    schedule:
+      interval: weekly
     groups:
       workflow-actions:
         patterns:
