@@ -37,7 +37,7 @@ jobs:
           persist-credentials: false
 
       - name: Scan Dockerfiles with KICS
-        uses: Checkmarx/kics-github-action@v2.1.20
+        uses: Checkmarx/kics-github-action@v2.2.1
         with:
           # Preserve the original scan scope and use Dockerfile queries.
           path: .build/www
@@ -54,7 +54,7 @@ jobs:
       - name: Scan Docker Compose with KICS
         # Run this scan if checkout succeeded, even if the Dockerfile scan failed.
         if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
-        uses: Checkmarx/kics-github-action@v2.1.20
+        uses: Checkmarx/kics-github-action@v2.2.1
         with:
           # Scan the tracked Compose file directly so findings can link to it.
           path: .build/docker-compose.yaml
