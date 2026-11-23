@@ -79,7 +79,7 @@ jobs:
       - name: Upload Dockerfile results to GitHub Code Scanning
         # Guard the upload so a missing report doesn't obscure a scan failure.
         if: ${{ !cancelled() && hashFiles('kics-reports/dockerfile/results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           sarif_file: kics-reports/dockerfile/results.sarif
           # Preserve the existing category for tracking Dockerfile findings.
@@ -88,7 +88,7 @@ jobs:
       - name: Upload Compose results to GitHub Code Scanning
         # Upload the Compose report whenever KICS produced it.
         if: ${{ !cancelled() && hashFiles('kics-reports/compose/results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           sarif_file: kics-reports/compose/results.sarif
           # A distinct category lets both reports coexist on the same commit.
