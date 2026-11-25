@@ -1,38 +1,116 @@
 # Documentation: https://github.com/compose-spec/compose-spec/blob/master/spec.md
 # Purpose: Build local containers for the Dragonfly environment
-
+#
 # Container image: webpwnized/dragonfly:www
-# From project root, build with: 
+#
+# From project root, build with:
 #   docker build --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
+#
+# From project root, build with refreshed base images:
+#   docker build --pull --file .build/www/Dockerfile --tag webpwnized/dragonfly:www .
+#
+# Alternatively, build using Compose:
+#   docker compose --file .build/docker-compose.yaml build --pull
 #
 # From project root, run with:
 #   Testing:      docker compose --file .build/docker-compose.yaml up --detach
 #   Development:  docker compose -f .build/docker-compose.yaml run -d --rm --name dragonfly --service-ports --volume "$HOME/projects/dragonfly/dragonfly/src:/var/www/dragonfly:ro" www
+#
+# Build and start together:
+#   docker compose --file .build/docker-compose.yaml up --detach --build
+#
+# Stop the regular service before starting the development container.
+# Both scenarios publish the same host ports:
+#   docker compose --file .build/docker-compose.yaml down
+#
+# Stop the development container:
+#   docker stop dragonfly
+#
+# The development container is automatically removed when it stops because
+# the development command includes --rm.
+#
+# Validate the Compose configuration:
+#   docker compose --file .build/docker-compose.yaml config --quiet
+#
+# View service status:
+#   docker compose --file .build/docker-compose.yaml ps
+#
+# View service logs:
+#   docker compose --file .build/docker-compose.yaml logs --tail 100 www
+#
+# Check the health endpoint:
+#   curl --fail http://127.0.0.1:8888/health.php
 
-# Documentation: https://github.com/compose-spec/compose-spec/blob/master/spec.md
-# Purpose: Build local containers for the Dragonfly environment
-
-# Define the services (containers) for the Dragonfly environment
+# Define the services (containers) for the Dragonfly environment.
 services:
-  # Service for the Dragonfly website
+  # Service for the Dragonfly website.
   www:
-    container_name: www  # Define the name of the container
-    image: webpwnized/dragonfly:www  # Specify the Docker image to use
+    # Define the name of the regular Compose container.
+    # The development command overrides this with --name dragonfly.
+    container_name: www
 
-    # Build configuration for the container
+    # Specify the Docker image to use and the tag assigned to local builds.
+    image: webpwnized/dragonfly:www
+
+    # Build configuration for the container.
+    # Paths are relative to this Compose file in the .build directory.
     build:
-        context: www  # Specify the build context directory containing Dockerfile
-        dockerfile: Dockerfile  # Specify the Dockerfile to use for building the image
+      # Specify the build context directory containing the Dockerfile.
+      context: www
 
-    # Port mapping for accessing the website
+      # Specify the Dockerfile within that build context.
+      dockerfile: Dockerfile
+
+    # Prevent processes from gaining additional privileges through
+    # setuid executables or file capabilities.
+    security_opt:
+      - no-new-privileges:true
+
+    # Check containers periodically to verify the web server responds.
+    # This overrides the image's health check for Compose deployments.
+    #
+    # The standalone health endpoint avoids application fingerprinting
+    # and external lookups during routine health checks.
+    #
+    # Double dollar signs prevent Compose from expanding PHP variables.
+    # PHP receives ordinary $context and $body variable names.
+    healthcheck:
+      test:
+        - CMD
+        - php
+        - -r
+        - >-
+          $$context = stream_context_create(["http" => ["timeout" => 2]]);
+          $$body = @file_get_contents("http://127.0.0.1/health.php", false, $$context);
+          exit($$body === "ok\n" ? 0 : 1);
+
+      # Run a health check every 30 seconds.
+      interval: 30s
+
+      # Stop a health check if it exceeds three seconds.
+      timeout: 3s
+
+      # Allow initial startup failures during the first ten seconds.
+      start_period: 10s
+
+      # Mark the container unhealthy after three consecutive failures.
+      retries: 3
+
+    # Port mappings for accessing the website.
+    # Bind to localhost to avoid exposing the application on every
+    # host network interface.
     ports:
-      - 127.0.0.1:80:80  # Map port 80 on the host to port 80 on the container
-      - 127.0.0.1:8888:80 # Map port 80 on the host to port 8888 on the container for DAST scan
+      # Map port 80 on the host to port 80 on the container.
+      - "127.0.0.1:80:80"
 
-    # Network configuration to attach the service to 'httpnet' network
+      # Map port 8888 on the host to port 80 on the container for DAST scans.
+      - "127.0.0.1:8888:80"
+
+    # Attach the service to the httpnet network.
     networks:
-      - httpnet  # Attach the service to the 'httpnet' network segment
+      - httpnet
 
-# Define network segments for the containers to use
+# Define network segments for the containers to use.
 networks:
-    httpnet:  # Define the 'httpnet' network segment
+  # Compose creates the application network with its default settings.
+  httpnet: {}
